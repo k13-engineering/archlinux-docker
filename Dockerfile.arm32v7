@@ -24,6 +24,8 @@ RUN pacman-key --populate archlinuxarm
 
 RUN pacman -Suu --noconfirm
 
+RUN rm -rf /var/cache/pacman/pkg/*
+
 # squash layers to optimize image size
 FROM scratch
 COPY --from=stage2 / .
