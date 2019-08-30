@@ -1,0 +1,31 @@
+FROM fkrull/qemu-user-static AS qemu-provider
+
+FROM arm64v8/debian:stable-slim AS stage1
+COPY --from=qemu-provider /usr/bin/qemu-aarch64-static /usr/bin/qemu-aarch64-static
+
+RUN apt-get update --yes
+RUN apt-get install curl tar --yes
+
+RUN curl -fsSL http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz > /tmp/ArchLinuxARM-aarch64-latest.tar.gz
+RUN mkdir -p /tmp/root && cd /tmp/root && tar xpf /tmp/ArchLinuxARM-aarch64-latest.tar.gz
+
+FROM scratch AS stage2
+COPY --from=stage1 /tmp/root .
+COPY --from=qemu-provider /usr/bin/qemu-aarch64-static /usr/bin/qemu-aarch64-static
+
+USER root
+
+RUN pacman -Syy --noconfirm
+
+RUN pacman-key --init
+RUN pacman-key --populate archlinuxarm
+RUN pacman -S archlinuxarm-keyring --noconfirm
+RUN pacman-key --populate archlinuxarm
+
+RUN pacman -Suu --noconfirm
+
+# squash layers to optimize image size
+FROM scratch
+COPY --from=stage2 / .
+
+CMD /bin/bash
