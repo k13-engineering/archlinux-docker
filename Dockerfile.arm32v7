@@ -9,7 +9,7 @@ RUN apt-get install curl tar --yes
 RUN curl -fsSL http://os.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz > /tmp/ArchLinuxARM-armv7-latest.tar.gz
 RUN mkdir -p /tmp/root && cd /tmp/root && tar xpf /tmp/ArchLinuxARM-armv7-latest.tar.gz
 
-FROM scratch
+FROM scratch AS stage2
 COPY --from=stage1 /tmp/root .
 COPY --from=qemu-provider /usr/bin/qemu-arm-static /usr/bin/qemu-arm-static
 
