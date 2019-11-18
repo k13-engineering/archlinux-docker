@@ -24,6 +24,8 @@ RUN pacman-key --populate archlinuxarm
 
 RUN pacman -Suu --noconfirm
 
+RUN pacman -R --noconfirm linux-aarch64 linux-firmware
+
 RUN rm -rf /var/cache/pacman/pkg/*
 
 # squash layers to optimize image size
