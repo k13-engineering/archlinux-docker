@@ -1,0 +1,24 @@
+FROM library/archlinux AS stage1
+
+USER root
+
+# Officical Archlinux Docker image adds NoExtract lines to pacman.conf
+# As we want all files, we remove these lines here
+RUN sed -i '/NoExtract/d' /etc/pacman.conf
+
+RUN pacman -Syy --noconfirm
+RUN pacman -Suu --noconfirm
+
+RUN pacman-key --init
+RUN pacman-key --populate archlinux
+
+# Reinstall all packages
+RUN pacman -Qnq | pacman -S --asdeps --noconfirm -
+
+RUN rm -rf /var/cache/pacman/pkg/*
+
+# squash layers to optimize image size
+FROM scratch
+COPY --from=stage1 / .
+
+CMD /bin/bash
