@@ -6,19 +6,23 @@ USER root
 # As we want all files, we remove these lines here
 RUN sed -i '/NoExtract/d' /etc/pacman.conf
 
+RUN curl -fsSL https://repo.archlinuxcn.org/x86_64/glibc-linux4-2.33-4-x86_64.pkg.tar.zst > /tmp/patched-glibc.tar.zst
+RUN bsdtar -C / -xvf /tmp/patched-glibc.tar.zst
+
 RUN pacman -Syy --noconfirm
 RUN pacman -Suu --noconfirm
 
+RUN bsdtar -C / -xvf /tmp/patched-glibc.tar.zst
+
 # Reinstall all packages
 RUN pacman -Qnq | pacman -S --noconfirm -
+
+RUN rm -rf /tmp/patched-glibc.tar.zst
 
 RUN rm -rf /var/cache/pacman/pkg/*
 
 # squash layers to optimize image size
 FROM scratch
 COPY --from=stage1 / .
-
-COPY mkbootdrive.x86_64.conf /mkbootdrive.conf
-RUN pacman -S grub linux --noconfirm
 
 CMD /bin/bash
