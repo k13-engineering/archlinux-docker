@@ -15,6 +15,8 @@ COPY --from=qemu-provider /usr/bin/qemu-arm-static /usr/bin/qemu-arm-static
 
 USER root
 
+RUN printf "[options]\nDisableDownloadTimeout\nParallelDownloads = 5\nXferCommand = /usr/bin/curl --connect-timeout 20 --max-time 30 --retry 10 --retry-delay 0 --retry-max-time 200 -L -C - -f -o %%o %%u\n" >> /etc/pacman.conf
+
 RUN pacman -Syy --noconfirm
 
 RUN pacman-key --init
